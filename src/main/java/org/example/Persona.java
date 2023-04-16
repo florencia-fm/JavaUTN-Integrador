@@ -11,4 +11,5 @@ public class Persona {
     private ArrayList<Pronostico> pronosticos;
     @Getter @Setter
     private Integer puntos;
+
 }
