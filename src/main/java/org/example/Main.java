@@ -6,6 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -15,11 +18,15 @@ public class Main {
         ArrayList pronosticos = new ArrayList<>();
         resultados = leerResultados(rutaResultados);
         pronosticos = leerPronostico(rutaPronostico);
-        compararResultados(pronosticos, resultados);
+
+        System.out.println("Puntos por persona:\n");
+        for (Object participante : compararResultados(pronosticos, resultados)) {
+            System.out.println(participante.toString());
+        }
     }
 
     // Función para leer los resultados
-    private static ArrayList leerResultados(String rutaResultados) throws IOException {
+    static ArrayList leerResultados(String rutaResultados) throws IOException {
         Path pathResultados = Paths.get(rutaResultados);
         int contadorDeRondas = 0;
         ArrayList<Ronda> rondas = new ArrayList<>();
@@ -58,7 +65,7 @@ public class Main {
     }
 
     // Función para leer el pronóstico
-    private static ArrayList leerPronostico(String rutaPronostico) throws IOException {
+    static ArrayList leerPronostico(String rutaPronostico) throws IOException {
         String participante = "";
         ArrayList<Persona> personas = new ArrayList<>();
         ArrayList<Pronostico> pronosticos = new ArrayList<>();
@@ -73,7 +80,7 @@ public class Main {
                 };
 
                 if (!datos[0].equals(participante)){
-                    Persona persona = new Persona(participante, pronosticos, 0);
+                    Persona persona = new Persona(participante, pronosticos, 0, 0);
                     personas.add(persona);
                     pronosticos = new ArrayList<>();
                     participante = datos[0];
@@ -105,7 +112,7 @@ public class Main {
                     }
                 }
             }
-            Persona persona = new Persona(participante, pronosticos, 0);
+            Persona persona = new Persona(participante, pronosticos, 0,  0);
             personas.add(persona);
 
         } catch (FileNotFoundException e) {
@@ -115,15 +122,16 @@ public class Main {
     }
 
     // Comprar resultados vs pronósticos
-    private static void compararResultados(ArrayList pronosticos, ArrayList resultados) {
+    static ArrayList compararResultados(ArrayList pronosticos, ArrayList resultados) {
+        ArrayList<Persona> participantes = new ArrayList<>();
         try{
-            System.out.println("Puntos por persona:");
             for (int i = 0; i < pronosticos.size(); i++) {
                 Persona persona = (Persona) pronosticos.get(i);
                 for (int j = 0; j < persona.getPronosticos().size(); j++) {
                     Pronostico pronostico = (Pronostico) persona.getPronosticos().get(j);
                     for (int k = 0; k < resultados.size(); k++) {
                         Ronda ronda = (Ronda) resultados.get(k);
+                        persona.setRondas(resultados.size());
                         for (int l = 0; l < ronda.getPartidos().size(); l++) {
                             Partido partido = (Partido) ronda.getPartidos().get(l);
                             if (pronostico.getPartido().getEquipo1().getNombre().equals(partido.getEquipo1().getNombre()) && pronostico.getPartido().getEquipo2().getNombre().equals(partido.getEquipo2().getNombre())) {
@@ -138,10 +146,11 @@ public class Main {
                         }
                     }
                 }
-                System.out.println(persona.getNombre() + ": " + persona.getPuntos());
+                participantes.add(persona);
             }
         } catch (Exception e) {
             System.out.println("Error");
         }
+        return participantes;
     }
 }
